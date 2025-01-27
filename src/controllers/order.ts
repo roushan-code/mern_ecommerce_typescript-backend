@@ -4,7 +4,7 @@ import { ControllerType, newOrderRequestBody } from "../types/types.js";
 import { invalidatesCache, reduceStock } from "../utils/features.js";
 import { Order } from "../models/order.js";
 import ErrorHandler from "../utils/utility-class.js";
-import { myCache } from "../app.js";
+import { myCache } from "../index.js";
 
 
 

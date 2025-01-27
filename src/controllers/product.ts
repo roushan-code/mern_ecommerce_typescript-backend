@@ -4,7 +4,7 @@ import { BaseQuery, newProductRequestBody, SearchRequestQuery, } from "../types/
 import { TryCatch } from "../middlewares/error.js";
 import ErrorHandler from "../utils/utility-class.js";
 import { rm } from "fs";
-import { myCache } from "../app.js";
+import { myCache } from "../index.js";
 import { invalidatesCache } from "../utils/features.js";
 
 
