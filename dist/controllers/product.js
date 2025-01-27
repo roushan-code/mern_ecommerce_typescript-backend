@@ -2,7 +2,7 @@ import { Product } from "../models/product.js";
 import { TryCatch } from "../middlewares/error.js";
 import ErrorHandler from "../utils/utility-class.js";
 import { rm } from "fs";
-import { myCache } from "../app.js";
+import { myCache } from "../index.js";
 import { invalidatesCache } from "../utils/features.js";
 // Revalidate on New,Udate,Delete, Product & new Order
 export const getlatestProducts = TryCatch(async (req, res, next) => {

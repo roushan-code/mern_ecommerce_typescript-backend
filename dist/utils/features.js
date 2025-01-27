@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { Product } from "../models/product.js";
-import { myCache } from "../app.js";
+import { myCache } from "../index.js";
 export const connectDB = (uri) => {
     mongoose.connect(uri, {
         dbName: "E-Commerce-db"
