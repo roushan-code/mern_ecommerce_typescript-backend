@@ -1,13 +1,19 @@
+import { NextFunction, Request, Response } from "express";
 import { myCache } from "../index.js";
 import { TryCatch } from "../middlewares/error.js";
 import { Order } from "../models/order.js";
 import { Product } from "../models/product.js";
 import { User } from "../models/user.js";
+import { ControllerType } from "../types/types.js";
 import { calculatePercentage, getChartData, getInventory } from "../utils/features.js";
 import ErrorHandler from "../utils/utility-class.js";
 
 
-export const getDashboardStats = TryCatch(async (req, res, next) => {
+export const getDashboardStats: ControllerType = TryCatch(async (
+    req: Request, 
+    res: Response, 
+    next: NextFunction
+): Promise<void> => {
     let stats = {};
     if (myCache.has('admin-stats')) {
         stats = JSON.parse(myCache.get('admin-stats') as string);
@@ -186,12 +192,17 @@ export const getDashboardStats = TryCatch(async (req, res, next) => {
         myCache.set('admin-stats', JSON.stringify(stats));
     }
 
-    return res.status(200).json({
+     res.status(200).json({
         success: true,
         stats
     })
 })
-export const getPieCharts = TryCatch(async (req, res, next) => {
+export const getPieCharts: ControllerType = TryCatch(async (
+    req: Request, 
+    res: Response, 
+    next: NextFunction
+
+): Promise<void> => {
     let charts;
     const key = `admin-pie-charts`;
 
@@ -268,12 +279,15 @@ export const getPieCharts = TryCatch(async (req, res, next) => {
         myCache.set(key, JSON.stringify(charts));
     }
 
-    return res.status(200).json({
+     res.status(200).json({
         success: true,
         charts
     })
 })
-export const getBarCharts = TryCatch(async (req, res, next) => {
+export const getBarCharts: ControllerType = TryCatch(async (
+    req: Request, res: Response, next: NextFunction
+
+): Promise<void> => {
     let charts;
     const key = 'admin-bar-charts';
 
@@ -333,7 +347,12 @@ export const getBarCharts = TryCatch(async (req, res, next) => {
         charts
     })
 })
-export const getLineCharts = TryCatch(async (req, res, next) => {
+export const getLineCharts: ControllerType = TryCatch(async (
+    req: Request, 
+    res: Response, 
+    next: NextFunction
+
+): Promise<void> => {
     let charts;
     const key = 'admin-line-charts';
 

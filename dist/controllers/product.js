@@ -13,7 +13,7 @@ export const getlatestProducts = TryCatch(async (req, res, next) => {
         products = await Product.find().sort({ createdAt: -1 }).limit(5);
         myCache.set("latestProducts", JSON.stringify(products));
     }
-    return res.status(200).json({
+    res.status(200).json({
         status: "success",
         products,
     });
@@ -27,7 +27,7 @@ export const getAllCategories = TryCatch(async (req, res, next) => {
         categories = await Product.distinct("category");
         myCache.set("categories", JSON.stringify(categories));
     }
-    return res.status(200).json({
+    res.status(200).json({
         status: "success",
         categories,
     });
@@ -41,7 +41,7 @@ export const getAdminProducts = TryCatch(async (req, res, next) => {
         products = await Product.find();
         myCache.set("all-Products", JSON.stringify(products));
     }
-    return res.status(200).json({
+    res.status(200).json({
         status: "success",
         products,
     });
@@ -60,7 +60,7 @@ export const getSingleProduct = TryCatch(async (req, res, next) => {
         }
         myCache.set(`product-${id}`, JSON.stringify(product));
     }
-    return res.status(200).json({
+    res.status(200).json({
         status: "success",
         product,
     });
@@ -74,7 +74,7 @@ export const deleteProduct = TryCatch(async (req, res, next) => {
         console.log("Deleted photo from disk");
     });
     invalidatesCache({ product: true, admin: true, productId: String(product._id) });
-    return res.status(200).json({
+    res.status(200).json({
         status: "success",
         message: "Product deleted successfully",
     });
@@ -99,7 +99,7 @@ export const newProduct = TryCatch(async (req, res, next) => {
         photo: photo?.path,
     });
     invalidatesCache({ product: true, admin: true });
-    return res.status(201).json({
+    res.status(201).json({
         status: "success",
         product,
         message: "Product created successfully"
@@ -129,7 +129,7 @@ export const updateProduct = TryCatch(async (req, res, next) => {
         product.stock = stock;
     await product.save();
     invalidatesCache({ product: true, admin: true, productId: String(product._id) });
-    return res.status(200).json({
+    res.status(200).json({
         status: "success",
         message: "Product Updated Successfully",
     });
@@ -160,7 +160,7 @@ export const getAllProducts = TryCatch(async (req, res, next) => {
         Product.find(baseQuery)
     ]);
     const totalPage = Math.ceil(filteredProduct.length / limit);
-    return res.status(200).json({
+    res.status(200).json({
         status: "success",
         products,
         totalPage,

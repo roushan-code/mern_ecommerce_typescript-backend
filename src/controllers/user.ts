@@ -1,20 +1,20 @@
 import { NextFunction, Request, Response } from "express";
 import { User } from "../models/user.js";
-import { newUserRequestBody } from "../types/types.js";
+import { ControllerType, newUserRequestBody } from "../types/types.js";
 import { TryCatch } from "../middlewares/error.js";
 import ErrorHandler from "../utils/utility-class.js";
 
 
-export const newUser = TryCatch(async (
+export const newUser: ControllerType = TryCatch(async (
     req: Request<{}, {}, newUserRequestBody>,
     res: Response,
     next: NextFunction
-) => {
+): Promise<void> => {
     const { _id, name, email, photo, gender, dob } = req.body;
 
     let user = await User.findById(_id);
     if (user) {
-        return res.status(400).json({
+         res.status(400).json({
             status: true,
             message: `Welcome, ${user.name}`,
         });

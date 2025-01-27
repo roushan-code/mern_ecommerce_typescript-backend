@@ -3,7 +3,7 @@ export const errorMiddleware = (err, req, res, next) => {
     err.statusCode || (err.statusCode = 500);
     if (err.name === "CastError")
         err.message = 'Invalid Id';
-    return res.status(err.statusCode).json({
+    res.status(err.statusCode).json({
         status: "fail",
         message: err.message,
     });

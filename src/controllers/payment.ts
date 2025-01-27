@@ -1,10 +1,12 @@
+import { NextFunction, Request, Response } from "express";
 import { stripe } from "../index.js";
 import { TryCatch } from "../middlewares/error.js";
 import { Coupon } from "../models/coupon.js";
+import { ControllerType } from "../types/types.js";
 import ErrorHandler from "../utils/utility-class.js";
 
 
-export const createPayment = TryCatch(async (req, res, next) => {
+export const createPayment: ControllerType = TryCatch(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const {amount} = req.body;
     console.log(amount)
     if(!amount){
@@ -16,13 +18,13 @@ export const createPayment = TryCatch(async (req, res, next) => {
         currency: 'inr',
     });
 
-    return res.status(200).json({
+    res.status(200).json({
         success: true, 
         client_secret: paymentIntent.client_secret
-    })
+    });
 });
 
-export const newCoupon = TryCatch(async (req, res, next) => {
+export const newCoupon: ControllerType = TryCatch(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const {coupon, amount} = req.body;
 
     if(!coupon || !amount){
@@ -31,13 +33,13 @@ export const newCoupon = TryCatch(async (req, res, next) => {
 
     await Coupon.create({code: coupon, amount})
 
-    return res.status(201).json({
+     res.status(201).json({
         success: true, 
         message: `Coupon ${coupon} Created Successfully`
     })
 })
 
-export const applyDiscount = TryCatch(async (req, res, next) => {
+export const applyDiscount: ControllerType = TryCatch(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const {coupon} = req.query;
 
     const discount = await Coupon.findOne({code: coupon});
@@ -46,26 +48,26 @@ export const applyDiscount = TryCatch(async (req, res, next) => {
         return next(new ErrorHandler( 400, 'Invalid Coupon Code'))
     }
 
-    return res.status(200).json({
+     res.status(200).json({
         success: true, 
         discount: discount.amount
     })
 });
 
-export const allCoupons = TryCatch(async (req, res, next) => {
+export const allCoupons: ControllerType = TryCatch(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const coupons = await Coupon.find();
 
     if(!coupons){
         return next(new ErrorHandler( 400, 'No Coupons Found'))
     }
 
-    return res.status(200).json({
+     res.status(200).json({
         success: true, 
         coupons,
     })
 });
 
-export const deleteCoupon = TryCatch(async (req, res, next) => {
+export const deleteCoupon: ControllerType = TryCatch(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const {id} = req.params;
 
     const coupon = await Coupon.findByIdAndDelete(id);
@@ -74,7 +76,7 @@ export const deleteCoupon = TryCatch(async (req, res, next) => {
         return next(new ErrorHandler( 400, 'Coupon Not Found'))
     }
 
-    return res.status(200).json({
+     res.status(200).json({
         success: true, 
         message: `Coupon ${coupon.code} Deleted Successfully`,
     })

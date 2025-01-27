@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { Product } from "../models/product.js";
-import { BaseQuery, newProductRequestBody, SearchRequestQuery, } from "../types/types.js";
+import { BaseQuery, ControllerType, newProductRequestBody, SearchRequestQuery, } from "../types/types.js";
 import { TryCatch } from "../middlewares/error.js";
 import ErrorHandler from "../utils/utility-class.js";
 import { rm } from "fs";
@@ -10,7 +10,7 @@ import { invalidatesCache } from "../utils/features.js";
 
 
 // Revalidate on New,Udate,Delete, Product & new Order
-export const getlatestProducts = TryCatch(async (req, res, next) => {
+export const getlatestProducts: ControllerType = TryCatch(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
 
     let products = []
     if(myCache.has("latestProducts"))
@@ -20,7 +20,7 @@ export const getlatestProducts = TryCatch(async (req, res, next) => {
         myCache.set("latestProducts", JSON.stringify(products));
     }
     
-    return res.status(200).json({
+     res.status(200).json({
         status: "success",
         products,
     });
@@ -28,7 +28,7 @@ export const getlatestProducts = TryCatch(async (req, res, next) => {
 });
 
 // Revalidate on New,Udate,Delete, Product & new Order
-export const getAllCategories = TryCatch(async (req, res, next) => {
+export const getAllCategories: ControllerType = TryCatch(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     let categories;
 
     if(myCache.has("categories"))
@@ -38,7 +38,7 @@ export const getAllCategories = TryCatch(async (req, res, next) => {
         myCache.set("categories", JSON.stringify(categories));
     }
 
-    return res.status(200).json({
+     res.status(200).json({
         status: "success",
         categories,
     });
@@ -46,7 +46,7 @@ export const getAllCategories = TryCatch(async (req, res, next) => {
 });
 
 // Revalidate on New,Udate,Delete, Product & new Order
-export const getAdminProducts = TryCatch(async (req, res, next) => {
+export const getAdminProducts: ControllerType = TryCatch(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     let products = [];
 
     if(myCache.has("all-Products"))
@@ -55,7 +55,7 @@ export const getAdminProducts = TryCatch(async (req, res, next) => {
         products = await Product.find();
         myCache.set("all-Products", JSON.stringify(products));
     }
-    return res.status(200).json({
+     res.status(200).json({
         status: "success",
         products,
     });
@@ -63,7 +63,7 @@ export const getAdminProducts = TryCatch(async (req, res, next) => {
 });
 
 // Revalidate on New,Udate,Delete, Product & new Order
-export const getSingleProduct = TryCatch(async (req, res, next) => {
+export const getSingleProduct: ControllerType = TryCatch(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     let product;
 
     const id = req.params.id;
@@ -80,12 +80,12 @@ export const getSingleProduct = TryCatch(async (req, res, next) => {
         myCache.set(`product-${id}`, JSON.stringify(product));
     }
 
-    return res.status(200).json({
+     res.status(200).json({
         status: "success",
         product,
     });
 });
-export const deleteProduct = TryCatch(async (req, res, next) => {
+export const deleteProduct: ControllerType = TryCatch(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const product = await Product.findByIdAndDelete(req.params.id);
 
     if (!product) {
@@ -99,7 +99,7 @@ export const deleteProduct = TryCatch(async (req, res, next) => {
      invalidatesCache({ product: true, admin: true,  productId: String(product._id) });
 
     
-    return res.status(200).json({
+     res.status(200).json({
         status: "success",
         message: "Product deleted successfully",
     });
@@ -107,9 +107,9 @@ export const deleteProduct = TryCatch(async (req, res, next) => {
 
 export const newProduct = TryCatch(async (
     req: Request<{}, {}, newProductRequestBody>,
-    res,
-    next
-) => {
+    res:Response,
+    next: NextFunction
+): Promise<void> => {
     const { name, price, category, stock } = req.body;
     const photo = req.file;
 
@@ -133,7 +133,7 @@ export const newProduct = TryCatch(async (
 
      invalidatesCache({ product: true, admin: true });
 
-    return res.status(201).json({
+     res.status(201).json({
         status: "success",
         product,
         message: "Product created successfully"
@@ -143,7 +143,7 @@ export const newProduct = TryCatch(async (
 
 });
 
-export const updateProduct = TryCatch(async (req, res, next) => {
+export const updateProduct: ControllerType = TryCatch(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { id } = req.params;
     const { name, price, category, stock } = req.body;
     const photo = req.file;
@@ -167,13 +167,13 @@ export const updateProduct = TryCatch(async (req, res, next) => {
     await product.save();
 
      invalidatesCache({ product: true, admin: true,  productId: String(product._id) });
-    return res.status(200).json({
+     res.status(200).json({
         status: "success",
         message: "Product Updated Successfully",
     });
 });
 
-export const getAllProducts = TryCatch(async (req: Request<{}, {}, {}, SearchRequestQuery>, res, next) => {
+export const getAllProducts = TryCatch(async (req: Request<{}, {}, {}, SearchRequestQuery>, res: Response, next: NextFunction): Promise<void> => {
     const { search, sort, category, price = 10000000 } = req.query;
 
     const page = Number(req.query.page) || 1;
@@ -211,7 +211,7 @@ export const getAllProducts = TryCatch(async (req: Request<{}, {}, {}, SearchReq
 
     const totalPage = Math.ceil(filteredProduct.length / limit);
 
-    return res.status(200).json({
+     res.status(200).json({
         status: "success",
         products,
         totalPage,

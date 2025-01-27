@@ -132,7 +132,7 @@ export const getDashboardStats = TryCatch(async (req, res, next) => {
         };
         myCache.set('admin-stats', JSON.stringify(stats));
     }
-    return res.status(200).json({
+    res.status(200).json({
         success: true,
         stats
     });
@@ -198,7 +198,7 @@ export const getPieCharts = TryCatch(async (req, res, next) => {
         };
         myCache.set(key, JSON.stringify(charts));
     }
-    return res.status(200).json({
+    res.status(200).json({
         success: true,
         charts
     });

@@ -21,10 +21,10 @@ export interface newProductRequestBody {
 
 
 export type ControllerType = (
- req: Request<any>,
- res: Response,
+    req: Request<any, any, any, any>,
+    res: Response,
     next: NextFunction
-) => Promise<void | Response<any, Record<string, any>>>;
+) => Promise<void>;
 
 
 export type SearchRequestQuery = {

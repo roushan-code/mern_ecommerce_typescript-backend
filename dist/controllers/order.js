@@ -13,7 +13,7 @@ export const myOrders = TryCatch(async (req, res, next) => {
         orders = await Order.find({ user });
         myCache.set(key, JSON.stringify(orders));
     }
-    return res.status(200).json({
+    res.status(200).json({
         status: "success",
         orders,
     });
@@ -27,7 +27,7 @@ export const allOrders = TryCatch(async (req, res, next) => {
         orders = await Order.find().populate("user", "name");
         myCache.set(key, JSON.stringify(orders));
     }
-    return res.status(200).json({
+    res.status(200).json({
         status: "success",
         orders,
     });
@@ -44,7 +44,7 @@ export const getSingleOrder = TryCatch(async (req, res, next) => {
             return next(new ErrorHandler(404, "Order Not Found"));
         myCache.set(key, JSON.stringify(order));
     }
-    return res.status(200).json({
+    res.status(200).json({
         status: "success",
         order,
     });
@@ -73,7 +73,7 @@ export const newOrder = TryCatch(async (req, res, next) => {
         userId: user,
         productId: newOrder.orderItems.map(i => String(i.productId))
     });
-    return res.status(201).json({
+    res.status(201).json({
         status: "success",
         order: newOrder,
         message: "Order created successfully",
@@ -96,12 +96,14 @@ export const processOrder = TryCatch(async (req, res, next) => {
             break;
     }
     await order.save();
-    invalidatesCache({ product: false,
+    invalidatesCache({
+        product: false,
         order: true,
         admin: true,
         userId: order.user,
-        orderId: order._id });
-    return res.status(200).json({
+        orderId: order._id
+    });
+    res.status(200).json({
         status: "success",
         message: "Order Processed Successfully",
     });
@@ -112,12 +114,14 @@ export const deleteOrder = TryCatch(async (req, res, next) => {
     if (!order)
         return next(new ErrorHandler(404, "Order Not Found"));
     await order.deleteOne();
-    invalidatesCache({ product: false,
+    invalidatesCache({
+        product: false,
         order: true,
         admin: true,
         userId: order.user,
-        orderId: order._id });
-    return res.status(200).json({
+        orderId: order._id
+    });
+    res.status(200).json({
         status: "success",
         message: "Order Deleted Successfully",
     });

@@ -12,7 +12,7 @@ export const createPayment = TryCatch(async (req, res, next) => {
         amount: Number(amount) * 100,
         currency: 'inr',
     });
-    return res.status(200).json({
+    res.status(200).json({
         success: true,
         client_secret: paymentIntent.client_secret
     });
@@ -23,7 +23,7 @@ export const newCoupon = TryCatch(async (req, res, next) => {
         return next(new ErrorHandler(400, 'Please Enter Coupon Code and Discount Amount'));
     }
     await Coupon.create({ code: coupon, amount });
-    return res.status(201).json({
+    res.status(201).json({
         success: true,
         message: `Coupon ${coupon} Created Successfully`
     });
@@ -34,7 +34,7 @@ export const applyDiscount = TryCatch(async (req, res, next) => {
     if (!discount) {
         return next(new ErrorHandler(400, 'Invalid Coupon Code'));
     }
-    return res.status(200).json({
+    res.status(200).json({
         success: true,
         discount: discount.amount
     });
@@ -44,7 +44,7 @@ export const allCoupons = TryCatch(async (req, res, next) => {
     if (!coupons) {
         return next(new ErrorHandler(400, 'No Coupons Found'));
     }
-    return res.status(200).json({
+    res.status(200).json({
         success: true,
         coupons,
     });
@@ -55,7 +55,7 @@ export const deleteCoupon = TryCatch(async (req, res, next) => {
     if (!coupon) {
         return next(new ErrorHandler(400, 'Coupon Not Found'));
     }
-    return res.status(200).json({
+    res.status(200).json({
         success: true,
         message: `Coupon ${coupon.code} Deleted Successfully`,
     });
