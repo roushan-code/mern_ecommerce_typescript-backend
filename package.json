@@ -7,7 +7,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node dist/app.js",
     "dev": "nodemon dist/app.js",
-    "build": "tsc",
+    "build": "rimraf dist && tsc",
+    "ts.check": "tsc --project tsconfig.json",
+    "add-build": "git add dist",
+    "pre-commit": "npm run ts.check && npm run build && npm run add-build",
     "watch": "tsc -w"
   },
   "author": "",
@@ -34,6 +37,8 @@
     "@types/uuid": "^10.0.0",
     "@types/validator": "^13.12.2",
     "nodemon": "^3.1.9",
+    "pre-commit": "^1.2.2",
+    "rimraf": "^6.0.1",
     "typescript": "^5.7.2"
   }
 }
