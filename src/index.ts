@@ -23,7 +23,7 @@ config({
 const app = express();
 app.use(cors(
   {
-    origin: 'http://localhost:5173',
+    origin: 'https://type-script-ecommerce-frontend.vercel.app',
     credentials: true,
 }
 ));
