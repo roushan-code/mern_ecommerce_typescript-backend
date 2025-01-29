@@ -8,7 +8,6 @@ import ErrorHandler from "../utils/utility-class.js";
 
 export const createPayment: ControllerType = TryCatch(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const {amount} = req.body;
-    console.log(amount)
     if(!amount){
         return next(new ErrorHandler( 400, 'Please Enter Amount'))
     }

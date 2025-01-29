@@ -1,5 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 
+export interface File {
+    mimetype: string;
+    buffer: Buffer;
+}   
 
 export interface newUserRequestBody {
     _id: string;
@@ -12,7 +16,10 @@ export interface newUserRequestBody {
 
 export interface newProductRequestBody {
     name: string;
-    photo: string;
+    photo: {
+        public_id: string;
+        url: string;
+      }[];
     price: number;
     stock: number;
     category: String;

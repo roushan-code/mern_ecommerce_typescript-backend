@@ -6,6 +6,7 @@ import ErrorHandler from "../utils/utility-class.js";
 import { rm } from "fs";
 import { myCache } from "../index.js";
 import { invalidatesCache } from "../utils/features.js";
+import { deleteFilesFromCloudinary, uploadFilesToCloudinary } from "../middlewares/features.js";
 
 
 
@@ -92,9 +93,11 @@ export const deleteProduct: ControllerType = TryCatch(async (req: Request, res: 
         return next(new ErrorHandler(404, "Product not found"));
     }
 
-    rm(product.photo, () => {
-        console.log("Deleted photo from disk");
-    });
+    const public_ids: string[] = [];
+
+    product.photo.forEach((image) => public_ids.push(image.public_id));
+
+    await deleteFilesFromCloudinary(public_ids);
 
      invalidatesCache({ product: true, admin: true,  productId: String(product._id) });
 
@@ -111,24 +114,25 @@ export const newProduct = TryCatch(async (
     next: NextFunction
 ): Promise<void> => {
     const { name, price, category, stock } = req.body;
-    const photo = req.file;
+    const photo = Array.isArray(req.files) ? req.files : [];
+    // console.log(photo);
 
-    if (!photo) {
-        return next(new ErrorHandler(400, "Please upload a photo"));
+    if ( photo.length < 1) {
+        return next(new ErrorHandler(400, "Please upload at least one product image"));
     }
     if (!name || !price || !category || !stock) {
-        rm(photo.path, () => {
-            console.log("Deleted photo from disk");
-        });
         return next(new ErrorHandler(400, "Please fill in all fields"));
     }
+
+// Upload files here
+const attachments = await uploadFilesToCloudinary(photo);
 
     const product = await Product.create({
         name,
         price,
         category: category.toLowerCase(),
         stock,
-        photo: photo?.path,
+        photo: attachments,
     })
 
      invalidatesCache({ product: true, admin: true });
@@ -146,18 +150,24 @@ export const newProduct = TryCatch(async (
 export const updateProduct: ControllerType = TryCatch(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { id } = req.params;
     const { name, price, category, stock } = req.body;
-    const photo = req.file;
+    const photo = Array.isArray(req.files) ? req.files : [];
     const product = await Product.findById(id);
 
     if (!product) {
         return next(new ErrorHandler(404, "Product not found"));
     }
 
-    if (photo) {
-        rm(product.photo, () => {
-            console.log("Deleted old photo")
+    const public_ids: string[] = [];
+    
+    product.photo.forEach(({public_id})=>{
+            public_ids.push(public_id);
         })
-        product.photo = photo.path;
+    
+
+    if (photo.length > 0) {
+        await deleteFilesFromCloudinary(public_ids);
+        const attachments = await uploadFilesToCloudinary(photo);
+        product.photo = attachments;
     }
 
     if (name) product.name = name;

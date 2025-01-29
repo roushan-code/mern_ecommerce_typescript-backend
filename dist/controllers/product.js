@@ -1,9 +1,9 @@
 import { Product } from "../models/product.js";
 import { TryCatch } from "../middlewares/error.js";
 import ErrorHandler from "../utils/utility-class.js";
-import { rm } from "fs";
 import { myCache } from "../index.js";
 import { invalidatesCache } from "../utils/features.js";
+import { deleteFilesFromCloudinary, uploadFilesToCloudinary } from "../middlewares/features.js";
 // Revalidate on New,Udate,Delete, Product & new Order
 export const getlatestProducts = TryCatch(async (req, res, next) => {
     let products = [];
@@ -70,9 +70,9 @@ export const deleteProduct = TryCatch(async (req, res, next) => {
     if (!product) {
         return next(new ErrorHandler(404, "Product not found"));
     }
-    rm(product.photo, () => {
-        console.log("Deleted photo from disk");
-    });
+    const public_ids = [];
+    product.photo.forEach((image) => public_ids.push(image.public_id));
+    await deleteFilesFromCloudinary(public_ids);
     invalidatesCache({ product: true, admin: true, productId: String(product._id) });
     res.status(200).json({
         status: "success",
@@ -81,22 +81,22 @@ export const deleteProduct = TryCatch(async (req, res, next) => {
 });
 export const newProduct = TryCatch(async (req, res, next) => {
     const { name, price, category, stock } = req.body;
-    const photo = req.file;
-    if (!photo) {
-        return next(new ErrorHandler(400, "Please upload a photo"));
+    const photo = Array.isArray(req.files) ? req.files : [];
+    // console.log(photo);
+    if (photo.length < 1) {
+        return next(new ErrorHandler(400, "Please upload at least one product image"));
     }
     if (!name || !price || !category || !stock) {
-        rm(photo.path, () => {
-            console.log("Deleted photo from disk");
-        });
         return next(new ErrorHandler(400, "Please fill in all fields"));
     }
+    // Upload files here
+    const attachments = await uploadFilesToCloudinary(photo);
     const product = await Product.create({
         name,
         price,
         category: category.toLowerCase(),
         stock,
-        photo: photo?.path,
+        photo: attachments,
     });
     invalidatesCache({ product: true, admin: true });
     res.status(201).json({
@@ -108,16 +108,19 @@ export const newProduct = TryCatch(async (req, res, next) => {
 export const updateProduct = TryCatch(async (req, res, next) => {
     const { id } = req.params;
     const { name, price, category, stock } = req.body;
-    const photo = req.file;
+    const photo = Array.isArray(req.files) ? req.files : [];
     const product = await Product.findById(id);
     if (!product) {
         return next(new ErrorHandler(404, "Product not found"));
     }
-    if (photo) {
-        rm(product.photo, () => {
-            console.log("Deleted old photo");
-        });
-        product.photo = photo.path;
+    const public_ids = [];
+    product.photo.forEach(({ public_id }) => {
+        public_ids.push(public_id);
+    });
+    if (photo.length > 0) {
+        await deleteFilesFromCloudinary(public_ids);
+        const attachments = await uploadFilesToCloudinary(photo);
+        product.photo = attachments;
     }
     if (name)
         product.name = name;

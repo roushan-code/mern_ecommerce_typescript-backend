@@ -113,7 +113,7 @@ export const getDashboardStats: ControllerType = TryCatch(async (
             User.countDocuments({ gender: 'female' }),
             latestTransactionsPromise
         ]);
-        console.log(thisMonthOrders, lastMonthOrders)
+        // console.log(thisMonthOrders, lastMonthOrders)
         const thisMonthRevenue = thisMonthOrders.reduce((total, order) => total + (order.total || 0), 0);
         const lastMonthRevenue = lastMonthOrders.reduce((total, order) => total + (order.total || 0), 0);
 

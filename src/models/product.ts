@@ -2,7 +2,10 @@ import mongoose from "mongoose";
 
 export interface IProduct extends mongoose.Document {
   name: string;
-  photo: string;
+  photo: {
+    public_id: string;
+    url: string;
+  }[];
   price: number;
   stock: number;
   category: string;
@@ -16,10 +19,18 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please Enter Product Name"],
   },
-  photo: {
-    type: String,
-    required: [true, "Please Add Photo"],
-  },
+  photo: [
+    {
+      public_id: {
+        type: String,
+        required: [true, "Please Add Photo"],
+      },
+      url: {
+        type: String,
+        required: [true, "Please Add Photo"],
+      },
+    },
+  ],
   price: {
     type: Number,
     required: [true, "Please Enter Product Price"],
