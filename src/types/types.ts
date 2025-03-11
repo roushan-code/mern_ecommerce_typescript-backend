@@ -23,6 +23,8 @@ export interface newProductRequestBody {
     price: number;
     stock: number;
     category: String;
+    description: string;
+    ratings: number;
 }
 
 
@@ -58,6 +60,8 @@ export type InvalidateCacheProps = {
     userId?: string;
     orderId?: string;
     productId?: string | string[];
+    review?: boolean;
+    reviewId?: string;
 };
 
 export type orderItemType = {

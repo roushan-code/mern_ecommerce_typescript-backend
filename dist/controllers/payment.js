@@ -17,14 +17,15 @@ export const createPayment = TryCatch(async (req, res, next) => {
     });
 });
 export const newCoupon = TryCatch(async (req, res, next) => {
-    const { coupon, amount } = req.body;
-    if (!coupon || !amount) {
+    const { code, amount } = req.body;
+    console.log(req.body);
+    if (!code || !amount) {
         return next(new ErrorHandler(400, 'Please Enter Coupon Code and Discount Amount'));
     }
-    await Coupon.create({ code: coupon, amount });
+    await Coupon.create({ code, amount });
     res.status(201).json({
         success: true,
-        message: `Coupon ${coupon} Created Successfully`
+        message: `Coupon ${code} Created Successfully`
     });
 });
 export const applyDiscount = TryCatch(async (req, res, next) => {
@@ -46,6 +47,32 @@ export const allCoupons = TryCatch(async (req, res, next) => {
     res.status(200).json({
         success: true,
         coupons,
+    });
+});
+export const getCoupon = TryCatch(async (req, res, next) => {
+    const { id } = req.params;
+    const coupon = await Coupon.findById(id);
+    if (!coupon)
+        return next(new ErrorHandler(400, "Invalid Coupon ID"));
+    res.status(200).json({
+        success: true,
+        coupon,
+    });
+});
+export const updateCoupon = TryCatch(async (req, res, next) => {
+    const { id } = req.params;
+    const { code, amount } = req.body;
+    const coupon = await Coupon.findById(id);
+    if (!coupon)
+        return next(new ErrorHandler(400, "Invalid Coupon ID"));
+    if (code)
+        coupon.code = code;
+    if (amount)
+        coupon.amount = amount;
+    await coupon.save();
+    res.status(200).json({
+        success: true,
+        message: `Coupon ${coupon.code} Updated Successfully`,
     });
 });
 export const deleteCoupon = TryCatch(async (req, res, next) => {

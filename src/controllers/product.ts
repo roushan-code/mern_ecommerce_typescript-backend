@@ -3,10 +3,12 @@ import { Product } from "../models/product.js";
 import { BaseQuery, ControllerType, newProductRequestBody, SearchRequestQuery, } from "../types/types.js";
 import { TryCatch } from "../middlewares/error.js";
 import ErrorHandler from "../utils/utility-class.js";
-import { rm } from "fs";
 import { myCache } from "../index.js";
-import { invalidatesCache } from "../utils/features.js";
+import { findAverageRatings, invalidatesCache } from "../utils/features.js";
 import { deleteFilesFromCloudinary, uploadFilesToCloudinary } from "../middlewares/features.js";
+import { User } from "../models/user.js";
+import { Review } from "../models/review.js";
+import { ObjectId } from "mongodb";
 
 
 
@@ -113,7 +115,7 @@ export const newProduct = TryCatch(async (
     res:Response,
     next: NextFunction
 ): Promise<void> => {
-    const { name, price, category, stock } = req.body;
+    const { name, price, category, stock, description } = req.body;
     const photo = Array.isArray(req.files) ? req.files : [];
     // console.log(photo);
 
@@ -133,6 +135,8 @@ const attachments = await uploadFilesToCloudinary(photo);
         category: category.toLowerCase(),
         stock,
         photo: attachments,
+        description,
+        
     })
 
      invalidatesCache({ product: true, admin: true });
@@ -149,7 +153,7 @@ const attachments = await uploadFilesToCloudinary(photo);
 
 export const updateProduct: ControllerType = TryCatch(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { id } = req.params;
-    const { name, price, category, stock } = req.body;
+    const { name, price, category, stock, description } = req.body;
     const photo = Array.isArray(req.files) ? req.files : [];
     const product = await Product.findById(id);
 
@@ -164,9 +168,9 @@ export const updateProduct: ControllerType = TryCatch(async (req: Request, res: 
         })
     
 
-    if (photo.length > 0) {
-        await deleteFilesFromCloudinary(public_ids);
+    if(photo.length > 0) {
         const attachments = await uploadFilesToCloudinary(photo);
+        await deleteFilesFromCloudinary(public_ids);
         product.photo = attachments;
     }
 
@@ -174,6 +178,7 @@ export const updateProduct: ControllerType = TryCatch(async (req: Request, res: 
     if (price) product.price = price;
     if (category) product.category = category;
     if (stock) product.stock = stock;
+    if (description) product.description = description;
     await product.save();
 
      invalidatesCache({ product: true, admin: true,  productId: String(product._id) });
@@ -228,3 +233,114 @@ export const getAllProducts = TryCatch(async (req: Request<{}, {}, {}, SearchReq
     });
 
 });
+
+export const allReviewsOfProduct: ControllerType = TryCatch(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    let reviews;
+    // const key = `review-${req.params.id}`;
+    // console.log(myCache.has(key))
+    // if(myCache.has(key)){
+    //     reviews = JSON.parse(myCache.get(key) as string);
+    // } else{
+         reviews = await Review.find({
+        product: req.params.id,
+    }).populate("user", "name photo")
+    .sort({ updatedAt: -1 });
+    //     myCache.set(key, JSON.stringify(reviews));
+    // }
+  
+     res.status(200).json({
+      success: true,
+      reviews,
+    });
+  });
+  
+  export const newReview: ControllerType = TryCatch(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const user = await User.findById(req.query.id);
+  
+    if (!user) return next(new ErrorHandler(404, "Not Logged In"));
+  
+    const product = await Product.findById(req.params.id);
+    if (!product) return next(new ErrorHandler(404, "Product Not Found"));
+  
+    const { comment, rating } = req.body;
+  
+    const alreadyReviewed = await Review.findOne({
+      user: user._id,
+      product: product._id,
+    });
+  
+    if (alreadyReviewed) {
+      alreadyReviewed.comment = comment;
+      alreadyReviewed.rating = rating;
+  
+      await alreadyReviewed.save();
+    } else {
+      await Review.create({
+        comment,
+        rating,
+        user: user._id,
+        product: product._id,
+      });
+    //   invalidatesCache({
+    //     product: true,
+    //     review: true,
+    //   });
+
+    }
+  
+    const { ratings, numOfReviews } = await findAverageRatings(product?._id as ObjectId);
+  
+    product.ratings = ratings;
+    product.numOfReviews = numOfReviews;
+  
+    await product.save();
+  
+    //  invalidatesCache({
+    //   product: true,
+    //   productId: String(product._id),
+    //   admin: true,
+    //   review: true,
+    // });
+  
+     res.status(alreadyReviewed ? 200 : 201).json({
+      success: true,
+      message: alreadyReviewed ? "Review Update" : "Review Added",
+    });
+  });
+  
+  export const deleteReview: ControllerType = TryCatch(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const user = await User.findById(req.query.id);
+  
+    if (!user) return next(new ErrorHandler(404, "Not Logged In"));
+  
+    const review = await Review.findById(req.params.id);
+    if (!review) return next(new ErrorHandler(404, "Review Not Found" ));
+  
+    const isAuthenticUser = review.user.toString() === user._id.toString();
+  
+    if (!isAuthenticUser) return next(new ErrorHandler(401, "Not Authorized"));
+  
+    await review.deleteOne();
+  
+    const product = await Product.findById(review.product);
+  
+    if (!product) return next(new ErrorHandler(404, "Product Not Found"));
+  
+    const { ratings, numOfReviews } = await findAverageRatings(product?._id as ObjectId);
+  
+    product.ratings = ratings;
+    product.numOfReviews = numOfReviews;
+  
+    await product.save();
+  
+    //  invalidatesCache({
+    //   product: true,
+    //   review: true,
+    //   reviewId: String(review._id),
+    // });
+  
+     res.status(200).json({
+      success: true,
+      message: "Review Deleted",
+    });
+  });

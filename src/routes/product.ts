@@ -1,7 +1,7 @@
 import express from "express";
 import { deleteUser, getAllUsers, getUser, newUser } from "../controllers/user.js";
 import { adminOnly } from "../middlewares/auth.js";
-import { deleteProduct, getAllProducts, updateProduct, getAllCategories, getlatestProducts, getSingleProduct, newProduct } from "../controllers/product.js";
+import { deleteProduct, getAllProducts, updateProduct, getAllCategories, getlatestProducts, getSingleProduct, newProduct, allReviewsOfProduct, newReview, deleteReview } from "../controllers/product.js";
 import { attachmentsMulter } from "../middlewares/multer.js";
 // import { singleUpload } from "../middlewares/multer.js";
 
@@ -19,6 +19,10 @@ app.get("/categories", getAllCategories);
 app.get("/admin/products",adminOnly, getlatestProducts);
 
 app.route("/:id").get(getSingleProduct).delete(adminOnly, deleteProduct).put(adminOnly, attachmentsMulter, updateProduct);
+
+app.get("/reviews/:id", allReviewsOfProduct);
+app.post("/review/new/:id", newReview);
+app.delete("/review/:id", deleteReview);
 
 
 

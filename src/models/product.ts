@@ -10,6 +10,8 @@ export interface IProduct extends mongoose.Document {
   stock: number;
   category: string;
   description: string;
+  ratings: number;
+  numOfReviews: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -43,6 +45,18 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please Enter Product Category"],
     trim: true,
+  },
+  description:{
+    type: String,
+    required: [true, "Please Type Description" ]
+  },
+  ratings:{
+    type: Number,
+    default: 0
+  },
+  numOfReviews: {
+    type: Number,
+    default: 0,
   }
 
 },

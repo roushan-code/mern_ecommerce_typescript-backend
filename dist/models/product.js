@@ -28,6 +28,18 @@ const productSchema = new mongoose.Schema({
         type: String,
         required: [true, "Please Enter Product Category"],
         trim: true,
+    },
+    description: {
+        type: String,
+        required: [true, "Please Type Description"]
+    },
+    ratings: {
+        type: Number,
+        default: 0
+    },
+    numOfReviews: {
+        type: Number,
+        default: 0,
     }
 }, { timestamps: true });
 export const Product = mongoose.model("Product", productSchema);
